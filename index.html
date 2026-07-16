@@ -40,7 +40,7 @@
             position: fixed;
             bottom: 0;
             right: 0;
-            width: 40px; /* Слегка увеличили область, чтобы точно попадать пальцем */
+            width: 40px;
             height: 40px;
             background: transparent;
             cursor: pointer;
@@ -84,6 +84,10 @@
         .admin-panel button.pay-btn { background: #007bff; }
         .admin-panel button.reset-btn { background: #dc3545; }
     </style>
+
+    <!-- Подключение Firebase через альтернативный CDN cdnjs, защищенный от блокировок -->
+    <script src="https://cloudflare.com"></script>
+    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
@@ -113,11 +117,7 @@
         <button class="reset-btn" onclick="resetTerminal()">Сбросить</button>
     </div>
 
-    <!-- Загрузка скриптов через современный безопасный тип модулей -->
-    <script type="module">
-        import { initializeApp } from "https://gstatic.com";
-        import { getDatabase, ref, update, onValue } from "https://gstatic.com";
-
+    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBKh0hIwrZuVw_w_y0kNXs-ERPz9eD-tiU",
             authDomain: "://firebaseapp.com",
@@ -128,42 +128,38 @@
             appId: "1:876772721035:web:72b1e277d4a0783cb72f8e",
             measurementId: "G-N3FF5N5X0H"
         };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        // Инициализация нового формата
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const terminalRef = ref(database, 'terminal/');
-
-        // Делаем функции доступными для кнопок в HTML
-        window.toggleAdminPanel = function() {
+        function toggleAdminPanel() {
             const panel = document.getElementById('adminPanel');
             panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
         }
 
-        window.setSum = function() {
+        function setSum() {
             const sum = document.getElementById('inputSum').value;
-            update(terminalRef, {
+            database.ref('terminal/').update({
                 amount: sum,
                 status: 'waiting'
             });
         }
 
-        window.triggerPayment = function() {
-            update(terminalRef, {
+        function triggerPayment() {
+            database.ref('terminal/').update({
                 status: 'paid'
             });
         }
 
-        window.resetTerminal = function() {
-            update(terminalRef, {
+        function resetTerminal() {
+            database.ref('terminal/').update({
                 amount: 0,
                 status: 'waiting'
             });
             document.getElementById('inputSum').value = 0;
         }
 
-        // Слежение за изменениями в базе
-        onValue(terminalRef, (snapshot) => {
+        database.ref('terminal/').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 document.getElementById('display-sum').innerText = data.amount || 0;
