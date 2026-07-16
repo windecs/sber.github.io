@@ -16,7 +16,7 @@
             height: 100vh;
         }
 
-        /* Экран Сбер-Терминала (основной экран для второго устройства) */
+        /* Экран Сбер-Терминала */
         .sber-screen {
             background: white;
             padding: 40px;
@@ -113,11 +113,10 @@
         <button class="reset-btn" onclick="resetTerminal()">Сбросить</button>
     </div>
 
-    <!-- Подключение библиотек Firebase через защищенный CDN -->
-    <script src="https://cloudflare.com"></script>
-    <script src="https://cloudflare.com"></script>
+    <!-- Загрузка файлов напрямую с вашего личного GitHub -->
+    <script src="firebase-app.js"></script>
+    <script src="firebase-database.js"></script>
 
-    <!-- Скрипт синхронизации и управления интерфейсом -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBKh0hIwrZuVw_w_y0kNXs-ERPz9eD-tiU",
@@ -130,17 +129,14 @@
             measurementId: "G-N3FF5N5X0H"
         };
         
-        // Инициализация базы данных
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Открытие/закрытие скрытого меню по клику в угол
         function toggleAdminPanel() {
             const panel = document.getElementById('adminPanel');
             panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
         }
 
-        // Изменение суммы в реальном времени
         function setSum() {
             const sum = document.getElementById('inputSum').value;
             database.ref('terminal/').update({
@@ -149,14 +145,12 @@
             });
         }
 
-        // Включение режима "Оплачено"
         function triggerPayment() {
             database.ref('terminal/').update({
                 status: 'paid'
             });
         }
 
-        // Возврат терминала в начальное состояние
         function resetTerminal() {
             database.ref('terminal/').update({
                 amount: 0,
@@ -165,7 +159,6 @@
             document.getElementById('inputSum').value = 0;
         }
 
-        // Слушатель базы данных — мгновенно синхронизирует все экраны при изменениях
         database.ref('terminal/').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
