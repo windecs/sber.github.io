@@ -17,7 +17,7 @@
             overflow: hidden;
         }
 
-        /* Экран Сбер-Терминала */
+        /* Экран Терминала */
         .sber-screen {
             background: white;
             padding: 40px;
@@ -26,6 +26,11 @@
             text-align: center;
             width: 300px;
             user-select: none;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .sber-logo {
             color: #21a038;
@@ -33,10 +38,18 @@
             font-weight: bold;
             margin-bottom: 20px;
         }
-        .status-wait { color: #555; font-size: 18px; }
-        .status-success { color: #21a038; font-size: 22px; font-weight: bold; display: none; }
+        
+        /* Стили для разных статусов экрана */
+        .status-text { color: #555; font-size: 18px; margin: 10px 0; }
         .amount-display { font-size: 32px; font-weight: bold; margin: 20px 0; color: #333; }
         
+        .status-success { color: #21a038; font-size: 22px; font-weight: bold; }
+        .status-process { color: #007bff; font-size: 20px; font-weight: bold; }
+        .status-auth { color: #ffc107; font-size: 20px; font-weight: bold; }
+
+        /* Скрытые по умолчанию блоки */
+        #wait-box, #process-box, #auth-box, #success-box { display: none; }
+
         /* Скрытая кнопка 50х50 пикселей в самом нижнем правом углу */
         .secret-trigger {
             position: fixed;
@@ -84,6 +97,7 @@
             font-weight: bold;
             margin-top: 5px;
         }
+        .admin-panel button.process-btn { background: #ffc107; color: #000; }
         .admin-panel button.pay-btn { background: #007bff; }
         .admin-panel button.reset-btn { background: #dc3545; }
     </style>
@@ -92,11 +106,27 @@
 
     <!-- Главный экран терминала -->
     <div class="sber-screen">
-        <div class="sber-logo">СБЕР</div>
+        <div class="sber-logo">ТЕРМИНАЛ</div>
+        
+        <!-- Шаг 1: Ожидание -->
         <div id="wait-box">
-            <p class="status-wait">Ожидание оплаты...</p>
-            <div class="amount-display"><span id="display-sum">0</span> ₽</div>
+            <p class="status-text">Ожидание оплаты...</p>
+            <div class="amount-display"><span class="display-sum">0</span> €</div>
         </div>
+        
+        <!-- Шаг 2: Обрабатывается -->
+        <div id="process-box">
+            <p class="status-process">Обрабатывается...</p>
+            <div class="amount-display"><span class="display-sum">0</span> €</div>
+        </div>
+
+        <!-- Шаг 3: Авторизация -->
+        <div id="auth-box">
+            <p class="status-auth">Авторизация...</p>
+            <div class="amount-display"><span class="display-sum">0</span> €</div>
+        </div>
+        
+        <!-- Шаг 4: Успешно оплачено -->
         <div id="success-box" class="status-success">
             <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
             УСПЕШНО ОПЛАЧЕНО
@@ -109,42 +139,83 @@
     <!-- Панель управления -->
     <div class="admin-panel" id="adminPanel">
         <h4 style="margin: 0 0 10px 0; text-align: center;">Управление</h4>
-        <label>Сумма к оплате:</label>
+        <label>Сумма к оплате (€):</label>
         <input type="number" id="inputSum" placeholder="Введите сумму" value="0">
         <button onclick="localSetSum()">Установить сумму</button>
-        <button class="pay-btn" onclick="localTriggerPayment()">Подтвердить Оплату</button>
+        <button class="process-btn" onclick="startPaymentChain()">Запустить процесс</button>
         <button class="reset-btn" onclick="localResetTerminal()">Сбросить</button>
     </div>
 
     <script>
+        // Изначально показываем экран ожидания
+        document.getElementById('wait-box').style.display = 'block';
+
         // Функция открытия/закрытия панели по клику в угол
         function toggleAdminPanel() {
             const panel = document.getElementById('adminPanel');
             panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
         }
 
-        // Локальная установка суммы (только для текущего экрана)
+        // Вспомогательная функция скрытия всех экранов терминала
+        function hideAllScreens() {
+            document.getElementById('wait-box').style.display = 'none';
+            document.getElementById('process-box').style.display = 'none';
+            document.getElementById('auth-box').style.display = 'none';
+            document.getElementById('success-box').style.display = 'none';
+        }
+
+        // Обновление цифр во всех блоках сразу
+        function updateSumDisplays(sum) {
+            const elements = document.getElementsByClassName('display-sum');
+            for(let i = 0; i < elements.length; i++) {
+                elements[i].innerText = sum;
+            }
+        }
+
+        // Кнопка: Установить сумму (Переводит в Ожидание с новой суммой)
         function localSetSum() {
             const sum = document.getElementById('inputSum').value || "0";
-            document.getElementById('display-sum').innerText = sum;
-            
-            // Возвращаем экран в режим ожидания, если была показана успешная оплата
+            updateSumDisplays(sum);
+            hideAllScreens();
             document.getElementById('wait-box').style.display = 'block';
-            document.getElementById('success-box').style.display = 'none';
         }
 
-        // Локальное включение успешной оплаты
-        function localTriggerPayment() {
-            document.getElementById('wait-box').style.display = 'none';
-            document.getElementById('success-box').style.display = 'block';
+        // Кнопка: Запустить процесс (Цепочка переключений по 5 секунд)
+        function startPaymentChain() {
+            const sum = document.getElementById('inputSum').value || "0";
+            updateSumDisplays(sum);
+            
+            // 1. Сразу включаем Ожидание
+            hideAllScreens();
+            document.getElementById('wait-box').style.display = 'block';
+
+            // 2. Через 5 секунд переключаем на "Обрабатывается..."
+            setTimeout(function() {
+                hideAllScreens();
+                document.getElementById('process-box').style.display = 'block';
+                
+                // 3. Еще через 5 секунд переключаем на "Авторизация..."
+                setTimeout(function() {
+                    hideAllScreens();
+                    document.getElementById('auth-box').style.display = 'block';
+                    
+                    // 4. Еще через 5 секунд переключаем на "Успешно оплачено"
+                    setTimeout(function() {
+                        hideAllScreens();
+                        document.getElementById('success-box').style.display = 'block';
+                    }, 5000);
+
+                }, 5000);
+
+            }, 5000);
         }
 
-        // Локальный сброс экрана в ноль
+        // Кнопка: Сбросить
         function localResetTerminal() {
             document.getElementById('inputSum').value = "0";
-            document.getElementById('display-sum').innerText = "0";
+            updateSumDisplays("0");
+            hideAllScreens();
             document.getElementById('wait-box').style.display = 'block';
-            document.getElementById('success-box').style.display = 'none';
         }
     </script>
 </body>
