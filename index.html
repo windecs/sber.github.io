@@ -3,27 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Интерфейс Сбер-Синхронизации</title>
+    <title>Интерфейс Сбер-Терминала</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .sber-screen { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; width: 300px; }
-        .sber-logo { color: #21a038; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Экран Сбер-Терминала */
+        .sber-screen {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 300px;
+            user-select: none;
+        }
+        .sber-logo {
+            color: #21a038;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
         .status-wait { color: #555; font-size: 18px; }
         .status-success { color: #21a038; font-size: 22px; font-weight: bold; display: none; }
         .amount-display { font-size: 32px; font-weight: bold; margin: 20px 0; color: #333; }
         
-        /* Секретный триггер: невидимая область 50х50 пикселей в самом углу */
-        .secret-trigger { position: fixed; bottom: 0; right: 0; width: 50px; height: 50px; background: transparent; cursor: pointer; z-index: 1000; }
+        /* Скрытая кнопка 50х50 пикселей в самом нижнем правом углу */
+        .secret-trigger {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            cursor: pointer;
+            z-index: 1000;
+        }
 
-        .admin-panel { display: none; position: fixed; bottom: 60px; right: 20px; background: #333; color: white; padding: 15px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 200px; z-index: 999; }
-        .admin-panel input { width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box; border: none; border-radius: 4px; color: #000; }
-        .admin-panel button { width: 100%; padding: 10px; background: #21a038; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+        /* Скрытая панель управления */
+        .admin-panel {
+            display: none;
+            position: fixed;
+            bottom: 60px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 200px;
+            z-index: 999;
+        }
+        .admin-panel input {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 4px;
+            color: #000;
+            font-size: 16px;
+        }
+        .admin-panel button {
+            width: 100%;
+            padding: 10px;
+            background: #21a038;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 5px;
+        }
         .admin-panel button.pay-btn { background: #007bff; }
         .admin-panel button.reset-btn { background: #dc3545; }
     </style>
 </head>
 <body>
 
+    <!-- Главный экран терминала -->
     <div class="sber-screen">
         <div class="sber-logo">СБЕР</div>
         <div id="wait-box">
@@ -36,82 +103,48 @@
         </div>
     </div>
 
-    <!-- Полностью прозрачная кнопка в самом углу -->
+    <!-- Полностью прозрачный квадрат в самом углу для вызова админки -->
     <div class="secret-trigger" onclick="toggleAdminPanel()"></div>
 
+    <!-- Панель управления -->
     <div class="admin-panel" id="adminPanel">
         <h4 style="margin: 0 0 10px 0; text-align: center;">Управление</h4>
         <label>Сумма к оплате:</label>
         <input type="number" id="inputSum" placeholder="Введите сумму" value="0">
-        <button id="btn-set">Установить сумму</button>
-        <button id="btn-pay" class="pay-btn">Подтвердить Оплату</button>
-        <button id="btn-reset" class="reset-btn">Сбросить</button>
+        <button onclick="localSetSum()">Установить сумму</button>
+        <button class="pay-btn" onclick="localTriggerPayment()">Подтвердить Оплату</button>
+        <button class="reset-btn" onclick="localResetTerminal()">Сбросить</button>
     </div>
 
-    <!-- Надежный последовательный загрузчик Firebase -->
     <script>
-        (function(){
-            var src = "https://gstatic.com";
-            var script = document.createElement('script');
-            script.src = src;
-            script.onload = function() {
-                var srcDb = "https://gstatic.com";
-                var scriptDb = document.createElement('script');
-                scriptDb.src = srcDb;
-                scriptDb.onload = function() {
-                    startApp();
-                };
-                document.head.appendChild(scriptDb);
-            };
-            document.head.appendChild(script);
-        })();
-
-        function startApp() {
-            const firebaseConfig = {
-                apiKey: "AIzaSyBKh0hIwrZuVw_w_y0kNXs-ERPz9eD-tiU",
-                authDomain: "://firebaseapp.com",
-                databaseURL: "https://firebaseio.com",
-                projectId: "windecs26"
-            };
-
-            firebase.initializeApp(firebaseConfig);
-            const database = firebase.database();
-
-            // Жестко привязываем действия к кнопкам после полной загрузки базы данных
-            document.getElementById('btn-set').onclick = function() {
-                const sum = document.getElementById('inputSum').value;
-                database.ref('terminal/').update({ amount: sum, status: 'waiting' });
-            };
-
-            document.getElementById('btn-pay').onclick = function() {
-                database.ref('terminal/').update({ status: 'paid' });
-            };
-
-            document.getElementById('btn-reset').onclick = function() {
-                database.ref('terminal/').update({ amount: 0, status: 'waiting' });
-                document.getElementById('inputSum').value = 0;
-            };
-
-            // Мгновенная синхронизация при изменении в Firebase
-            database.ref('terminal/').on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    document.getElementById('display-sum').innerText = data.amount || 0;
-                    if (data.status === 'paid') {
-                        document.getElementById('wait-box').style.display = 'none';
-                        document.getElementById('success-box').style.display = 'block';
-                    } else {
-                        document.getElementById('wait-box').style.display = 'block';
-                        document.getElementById('success-box').style.display = 'none';
-                    }
-                }
-            });
-        }
-
-        // Функция открытия админ-панели
+        // Функция открытия/закрытия панели по клику в угол
         function toggleAdminPanel() {
             const panel = document.getElementById('adminPanel');
             panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+        }
+
+        // Локальная установка суммы (только для текущего экрана)
+        function localSetSum() {
+            const sum = document.getElementById('inputSum').value || "0";
+            document.getElementById('display-sum').innerText = sum;
+            
+            // Возвращаем экран в режим ожидания, если была показана успешная оплата
+            document.getElementById('wait-box').style.display = 'block';
+            document.getElementById('success-box').style.display = 'none';
+        }
+
+        // Локальное включение успешной оплаты
+        function localTriggerPayment() {
+            document.getElementById('wait-box').style.display = 'none';
+            document.getElementById('success-box').style.display = 'block';
+        }
+
+        // Локальный сброс экрана в ноль
+        function localResetTerminal() {
+            document.getElementById('inputSum').value = "0";
+            document.getElementById('display-sum').innerText = "0";
+            document.getElementById('wait-box').style.display = 'block';
+            document.getElementById('success-box').style.display = 'none';
         }
     </script>
 </body>
