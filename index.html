@@ -35,13 +35,13 @@
         .status-success { color: #21a038; font-size: 22px; font-weight: bold; display: none; }
         .amount-display { font-size: 32px; font-weight: bold; margin: 20px 0; color: #333; }
 
-        /* Неприметная кнопка вызова админки справа снизу */
+        /* Скрытая кнопка вызова админки справа снизу */
         .secret-trigger {
             position: fixed;
             bottom: 0;
             right: 0;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             background: transparent;
             cursor: pointer;
             z-index: 1000;
@@ -51,7 +51,7 @@
         .admin-panel {
             display: none;
             position: fixed;
-            bottom: 50px;
+            bottom: 60px;
             right: 20px;
             background: #333;
             color: white;
@@ -84,6 +84,10 @@
         .admin-panel button.pay-btn { background: #007bff; }
         .admin-panel button.reset-btn { background: #dc3545; }
     </style>
+
+    <!-- Подключение Firebase через альтернативный стабильный сервер UNPKG -->
+    <script src="https://unpkg.com"></script>
+    <script src="https://unpkg.com"></script>
 </head>
 <body>
 
@@ -112,10 +116,6 @@
         <button class="pay-btn" onclick="triggerPayment()">Подтвердить Оплату</button>
         <button class="reset-btn" onclick="resetTerminal()">Сбросить</button>
     </div>
-
-    <!-- Загрузка файлов напрямую с вашего личного GitHub -->
-    <script src="firebase-app.js"></script>
-    <script src="firebase-database.js"></script>
 
     <script>
         const firebaseConfig = {
