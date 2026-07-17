@@ -24,6 +24,7 @@
             border-radius: 24px;
             box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.1);
             border: 2px solid #3d3e44;
+            position: relative; /* Нужно для фиксации винтика на корпусе */
         }
 
         /* Экран Сбер-Терминала */
@@ -128,31 +129,46 @@
         /* Скрытые по умолчанию блоки */
         #wait-box, #process-box, #auth-box, #success-box { width: 100%; height: 100%; display: none; }
 
-        /* УВЕЛИЧЕННАЯ СЕКРЕТНАЯ ЗОНА (100х100px) В САМОМ НИЖНЕМ ПРАВОМ УГЛУ ЭКРАНА */
-        .secret-trigger {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 100px;
-            height: 100px;
-            background: transparent;
+        /* КНОПКА-ВИНТИК НА КОРПУСЕ (справа внизу под экраном) */
+        .secret-bolt-trigger {
+            position: absolute;
+            bottom: 12px;
+            right: 25px;
+            width: 16px;
+            height: 16px;
+            background: #4e5057;
+            border: 2px solid #222325;
+            border-radius: 50%;
             cursor: pointer;
             z-index: 1000;
+            box-shadow: inset 1px 1px 2px rgba(255,255,255,0.2), 0 2px 4px rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Прорезь внутри винтика для реалистичности */
+        .secret-bolt-trigger::before {
+            content: "";
+            width: 10px;
+            height: 2px;
+            background: #222325;
+            transform: rotate(45deg);
         }
 
         /* Панель управления (Админка) */
         .admin-panel {
             display: none;
             position: fixed;
-            bottom: 110px;
-            right: 25px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Теперь открывается ровно по центру экрана поверх всего */
             background: #222222;
             color: white;
-            padding: 18px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            width: 220px;
-            z-index: 999;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            width: 240px;
+            z-index: 9999;
             border: 1px solid #444;
         }
         .admin-panel label { font-size: 13px; color: #bbbbbb; }
@@ -242,16 +258,16 @@
 
             </div>
             
-            <!-- Текст «ВВЕДИТЕ СУММУ В АДМИНКЕ» УДАЛЕН. Оставлена только пустая служебная строчка -->
             <div class="terminal-footer" id="termFooter">Вставьте или приложите карту</div>
             
         </div>
+
+        <!-- Неприметный винтик справа внизу на сером корпусе терминала -->
+        <div class="secret-bolt-trigger" onclick="toggleAdminPanel()"></div>
+
     </div>
 
-    <!-- Большой невидимый квадрат в самом углу для открытия админки -->
-    <div class="secret-trigger" onclick="toggleAdminPanel()"></div>
-
-    <!-- Панель управления -->
+    <!-- Панель управления (теперь открывается по центру экрана) -->
     <div class="admin-panel" id="adminPanel">
         <h4 style="margin: 0 0 10px 0; text-align: center; font-size: 15px;">Панель Кассира</h4>
         <label>Сумма заказа (€):</label>
@@ -262,17 +278,4 @@
     </div>
 
     <script>
-        function toggleAdminPanel() {
-            const panel = document.getElementById('adminPanel');
-            panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
-        }
-
-        function clearDisplay() {
-            document.getElementById('wait-box').style.display = 'none';
-            document.getElementById('process-box').style.display = 'none';
-            document.getElementById('auth-box').style.display = 'none';
-            document.getElementById('success-box').style.display = 'none';
-        }
-
-        function updateSumDisplays(sum) {
-            const elements = document.getElementsByClassName('display-sum');
+        // Открытие меню
