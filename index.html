@@ -12,7 +12,7 @@
         .status-success { color: #21a038; font-size: 22px; font-weight: bold; display: none; }
         .amount-display { font-size: 32px; font-weight: bold; margin: 20px 0; color: #333; }
         
-        /* Секретный триггер: теперь это невидимая область 50х50 пикселей в углу */
+        /* Секретный триггер: невидимая область 50х50 пикселей в самом углу */
         .secret-trigger { position: fixed; bottom: 0; right: 0; width: 50px; height: 50px; background: transparent; cursor: pointer; z-index: 1000; }
 
         .admin-panel { display: none; position: fixed; bottom: 60px; right: 20px; background: #333; color: white; padding: 15px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 200px; z-index: 999; }
@@ -43,15 +43,28 @@
         <h4 style="margin: 0 0 10px 0; text-align: center;">Управление</h4>
         <label>Сумма к оплате:</label>
         <input type="number" id="inputSum" placeholder="Введите сумму" value="0">
-        <button onclick="setSum()">Установить сумму</button>
-        <button class="pay-btn" onclick="triggerPayment()">Подтвердить Оплату</button>
-        <button class="reset-btn" onclick="resetTerminal()">Сбросить</button>
+        <button id="btn-set">Установить сумму</button>
+        <button id="btn-pay" class="pay-btn">Подтвердить Оплату</button>
+        <button id="btn-reset" class="reset-btn">Сбросить</button>
     </div>
 
-    <!-- СКРИПТ: Firebase библиотека + логика синхронизации без внешних ссылок -->
+    <!-- Надежный последовательный загрузчик Firebase -->
     <script>
-        // Компактный загрузчик Firebase, работающий напрямую через текстовый поток данных
-        (function(){var src="https://gstatic.com";var script=document.createElement('script');script.src=src;script.onload=function(){var srcDb="https://gstatic.com";var scriptDb=document.createElement('script');scriptDb.src=srcDb;scriptDb.onload=function(){startApp();};document.head.appendChild(scriptDb);};document.head.appendChild(script);})();
+        (function(){
+            var src = "https://gstatic.com";
+            var script = document.createElement('script');
+            script.src = src;
+            script.onload = function() {
+                var srcDb = "https://gstatic.com";
+                var scriptDb = document.createElement('script');
+                scriptDb.src = srcDb;
+                scriptDb.onload = function() {
+                    startApp();
+                };
+                document.head.appendChild(scriptDb);
+            };
+            document.head.appendChild(script);
+        })();
 
         function startApp() {
             const firebaseConfig = {
@@ -64,20 +77,22 @@
             firebase.initializeApp(firebaseConfig);
             const database = firebase.database();
 
-            window.setSum = function() {
+            // Жестко привязываем действия к кнопкам после полной загрузки базы данных
+            document.getElementById('btn-set').onclick = function() {
                 const sum = document.getElementById('inputSum').value;
                 database.ref('terminal/').update({ amount: sum, status: 'waiting' });
-            }
+            };
 
-            window.triggerPayment = function() {
+            document.getElementById('btn-pay').onclick = function() {
                 database.ref('terminal/').update({ status: 'paid' });
-            }
+            };
 
-            window.resetTerminal = function() {
+            document.getElementById('btn-reset').onclick = function() {
                 database.ref('terminal/').update({ amount: 0, status: 'waiting' });
                 document.getElementById('inputSum').value = 0;
-            }
+            };
 
+            // Мгновенная синхронизация при изменении в Firebase
             database.ref('terminal/').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -93,6 +108,7 @@
             });
         }
 
+        // Функция открытия админ-панели
         function toggleAdminPanel() {
             const panel = document.getElementById('adminPanel');
             panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
