@@ -43,7 +43,7 @@
             position: relative;
         }
 
-        /* Верхняя зеленая/черная статус-панель терминала */
+        /* Верхняя статус-панель Сбербанка */
         .terminal-header {
             width: 100%;
             background: #212224;
@@ -56,7 +56,7 @@
             justify-content: center;
             align-items: center;
             gap: 6px;
-            border-bottom: 3px solid #21a038; /* Фирменная полоса Сбера */
+            border-bottom: 3px solid #21a038;
         }
         .header-dot {
             width: 8px;
@@ -80,13 +80,13 @@
         .status-text { color: #333333; font-size: 20px; font-weight: 600; margin: 0 0 15px 0; }
         .amount-display { font-size: 38px; font-weight: 700; margin: 10px 0; color: #111111; }
         
-        /* Иконка бесконтактной оплаты (волны) */
+        /* Иконка бесконтактной оплаты */
         .contactless-icon {
             margin-bottom: 25px;
             opacity: 0.7;
         }
 
-        /* Анимация крутилки (спиннера) Сбера */
+        /* Анимация крутилки (спиннера) */
         .spinner {
             width: 50px;
             height: 50px;
@@ -128,13 +128,13 @@
         /* Скрытые по умолчанию блоки */
         #wait-box, #process-box, #auth-box, #success-box { width: 100%; height: 100%; display: none; }
 
-        /* Абсолютно скрытый триггер админки в самом правом нижнем углу */
+        /* УВЕЛИЧЕННАЯ СЕКРЕТНАЯ ЗОНА (100х100px) В САМОМ НИЖНЕМ ПРАВОМ УГЛУ ЭКРАНА */
         .secret-trigger {
             position: fixed;
             bottom: 0;
             right: 0;
-            width: 60px;
-            height: 60px;
+            width: 100px;
+            height: 100px;
             background: transparent;
             cursor: pointer;
             z-index: 1000;
@@ -144,7 +144,7 @@
         .admin-panel {
             display: none;
             position: fixed;
-            bottom: 75px;
+            bottom: 110px;
             right: 25px;
             background: #222222;
             color: white;
@@ -179,13 +179,9 @@
             font-weight: bold;
             margin-top: 6px;
             font-size: 14px;
-            transition: background 0.2s;
         }
-        .admin-panel button:active { background: #1a7e2c; }
         .admin-panel button.process-btn { background: #007bff; }
-        .admin-panel button.process-btn:active { background: #0056b3; }
         .admin-panel button.reset-btn { background: #dc3545; }
-        .admin-panel button.reset-btn:active { background: #bd2130; }
     </style>
 </head>
 <body>
@@ -208,7 +204,6 @@
                 <!-- 1. Экран Ожидания Кары -->
                 <div id="wait-box" style="display: block;">
                     <div class="contactless-icon">
-                        <!-- Иконка бесконтактных волн через стандартный SVG -->
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#21a038" stroke-width="2.5" stroke-linecap="round">
                             <path d="M5 12a7 7 0 0 1 7-7v0" />
                             <path d="M5 15a10 10 0 0 1 10-10v0" />
@@ -227,7 +222,7 @@
                     <div class="amount-display"><span class="display-sum">0.00</span> €</div>
                 </div>
 
-                <!-- 3. Экран Авторизации банка -->
+                <!-- 3. Экран Авторизации -->
                 <div id="auth-box">
                     <div class="spinner" style="border-top-color: #ffc107;"></div>
                     <p class="status-text" style="color: #b58900;">Авторизация...</p>
@@ -241,24 +236,22 @@
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
                         <div class="success-title">СПАСИБО</div>
-                        <p style="font-size: 14px; margin-times: 5px; opacity: 0.9;">ОПЛАЧЕНО</p>
+                        <p style="font-size: 14px; margin-top: 5px; opacity: 0.9;">ОПЛАЧЕНО</p>
                     </div>
                 </div>
 
             </div>
             
-            <!-- Нижняя служебная строчка дисплея -->
-            <div class="terminal-footer" id="termFooter">
-                ВВЕДИТЕ СУММУ В АДМИНКЕ
-            </div>
+            <!-- Текст «ВВЕДИТЕ СУММУ В АДМИНКЕ» УДАЛЕН. Оставлена только пустая служебная строчка -->
+            <div class="terminal-footer" id="termFooter">Вставьте или приложите карту</div>
             
         </div>
     </div>
 
-    <!-- Полностью скрытый квадрат в углу экрана для открытия админки -->
+    <!-- Большой невидимый квадрат в самом углу для открытия админки -->
     <div class="secret-trigger" onclick="toggleAdminPanel()"></div>
 
-    <!-- Панель управления (Вызывается кликом справа снизу) -->
+    <!-- Панель управления -->
     <div class="admin-panel" id="adminPanel">
         <h4 style="margin: 0 0 10px 0; text-align: center; font-size: 15px;">Панель Кассира</h4>
         <label>Сумма заказа (€):</label>
@@ -269,6 +262,17 @@
     </div>
 
     <script>
-        // Открытие и закрытие скрытого пульта управления кассира
         function toggleAdminPanel() {
             const panel = document.getElementById('adminPanel');
+            panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function clearDisplay() {
+            document.getElementById('wait-box').style.display = 'none';
+            document.getElementById('process-box').style.display = 'none';
+            document.getElementById('auth-box').style.display = 'none';
+            document.getElementById('success-box').style.display = 'none';
+        }
+
+        function updateSumDisplays(sum) {
+            const elements = document.getElementsByClassName('display-sum');
