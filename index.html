@@ -1,1 +1,120 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><title>Sber Terminal</title><style>html,body{margin:0;padding:0;width:100%;height:100%;background-color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden;touch-action:none;}.sber-screen{background:#ffffff;width:100%;height:100%;user-select:none;display:flex;flex-direction:column;justify-content:space-between;align-items:center;position:relative;box-sizing:border-box;}.terminal-header{width:100%;background:#212224;color:#ffffff;padding:12px 0;display:flex;justify-content:center;align-items:center;border-bottom:4px solid #21a038;box-sizing:border-box;gap:8px;}.terminal-main{flex-grow:1;display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;padding:20px;box-sizing:border-box;}.status-text{color:#333333;font-size:24px;font-weight:600;margin:0 0 20px 0;}.amount-display{font-size:46px;font-weight:700;margin:15px 0;color:#111111;}.sber-center-logo{margin-bottom:35px;display:flex;justify-content:center;align-items:center;}.spinner{width:60px;height:60px;border:6px solid #f3f3f3;border-top:6px solid #21a038;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:25px;}@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}.success-bg{background:#21a038;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;animation:fadeIn 0.2s ease-out;position:absolute;top:0;left:0;z-index:10;}.success-title{font-size:28px;font-weight:700;letter-spacing:0.5px;margin-top:20px;}@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}#wait-box,#process-box,#auth-box,#success-box{width:100%;display:none;}.secret-bolt-trigger{position:absolute;bottom:0;right:0;width:60px;height:60px;background:transparent;cursor:pointer;z-index:1000;}.admin-panel{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#222222;color:white;padding:22px;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,0.7);width:260px;z-index:9999;border:1px solid #444;box-sizing:border-box;}.admin-panel label{font-size:14px;color:#bbbbbb;}.admin-panel input{width:100%;padding:12px;margin:8px 0 14px 0;box-sizing:border-box;border:1px solid #444;background:#111;border-radius:6px;color:#fff;font-size:18px;outline:none;}.admin-panel button{width:100%;padding:12px;background:#21a038;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;margin-top:8px;font-size:15px;}.admin-panel button.process-btn{background:#007bff;}.admin-panel button.reset-btn{background:#dc3545;}</style></head><body><div class="sber-screen"><div class="terminal-header"><svg width="150" height="36" viewBox="0 0 150 36" fill="none"><defs><linearGradient id="sberGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#008bf2"/><stop offset="35%" stop-color="#00b050"/><stop offset="70%" stop-color="#a6d900"/><stop offset="100%" stop-color="#21a038"/></linearGradient></defs><circle cx="18" cy="18" r="14" stroke="url(#sberGrad)" stroke-width="3.5" fill="none" stroke-dasharray="72 20" transform="rotate(-40 18 18)"/><path d="M12 18l4 4 10-10" stroke="#21a038" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><text x="40" y="24" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" letter-spacing="0.5">СБЕР</text></svg></div><div class="terminal-main"><div id="wait-box" style="display:block;"><div class="sber-center-logo"><svg width="90" height="90" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" stroke="url(#sberGrad)" stroke-width="3.5" fill="none" stroke-dasharray="72 20" transform="rotate(-40 18 18)"/><path d="M12 18l4 4 10-10" stroke="#21a038" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><p class="status-text">Приложите карту</p><div class="amount-display"><span class="display-sum">0.00</span> €</div></div><div id="process-box"><div class="spinner" style="margin:0 auto 25px auto;"></div><p class="status-text" style="color:#007bff;">Обрабатывается...</p><div class="amount-display"><span class="display-sum">0.00</span> €</div></div><div id="auth-box"><div class="spinner" style="margin:0 auto 25px auto;border-top-color:#ffc107;"></div><p class="status-text" style="color:#b58900;">Авторизация...</p><div class="amount-display"><span class="display-sum">0.00</span> €</div></div><div id="success-box"><div class="success-bg"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><div class="success-title">СПАСИБО</div><p style="font-size:16px;margin-top:8px;opacity:0.9;">ОПЛАЧЕНО</p></div></div></div><div style="height:20px;width:100%;"></div><div class="secret-bolt-trigger" onclick="toggleAdminPanel()"></div></div><div class="admin-panel" id="adminPanel"><h4 style="margin:0 0 12px 0;text-align:center;font-size:16px;">Панель Кассира</h4><label>Сумма заказа (€):</label><input type="number" id="inputSum" placeholder="0.00" value="0"><button onclick="localSetSum()">Записать сумму</button><button class="process-btn" onclick="startPaymentChain()">Запустить процесс</button><button class="reset-btn" onclick="localResetTerminal()">Сбросить всё</button></div><script>function toggleAdminPanel(){const panel=document.getElementById('adminPanel');panel.style.display=(panel.style.display==='block')?'none':'block';}function clearDisplay(){document.getElementById('wait-box').style.display='none';document.getElementById('process-box').style.display='none';document.getElementById('auth-box').style.display='none';document.getElementById('success-box').style.display='none';}function updateSumDisplays(sum){const elements=document.getElementsByClassName('display-sum');const formattedSum=parseFloat(sum).toFixed(2);for(let i=0;i<elements.length;i++){elements[i].innerText=formattedSum;}}function localSetSum(){const sum=document.getElementById('inputSum').value||"0";updateSumDisplays(sum);clearDisplay();document.getElementById('wait-box').style.display='block';toggleAdminPanel();}function startPaymentChain(){const sum=document.getElementById('inputSum').value||"0";updateSumDisplays(sum);toggleAdminPanel();clearDisplay();document.getElementById('wait-box').style.display='block';setTimeout(function(){clearDisplay();document.getElementById('process-box').style.display='block';setTimeout(function(){clearDisplay();document.getElementById('auth-box').style.display='block';setTimeout(function(){clearDisplay();document.getElementById('success-box').style.display='block';},2500);},2500);},2500);}function localResetTerminal(){document.getElementById('inputSum').value="0";updateSumDisplays("0");clearDisplay();document.getElementById('wait-box').style.display='block';toggleAdminPanel();}</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page not found · GitHub Pages</title>
+    <style>
+        body {
+            background-color: #f9f9f9;
+            color: #666666;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 50px;
+            font-weight: 300;
+            color: #000000;
+            margin: 0 0 30px 0;
+        }
+
+        h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333333;
+            margin: 0 0 20px 0;
+        }
+
+        p {
+            margin: 0 0 15px 0;
+            font-weight: 300;
+        }
+
+        p.note {
+            font-size: 13px;
+        }
+
+        code {
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            background-color: rgba(27, 31, 35, 0.05);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+
+        a {
+            color: #4078c0;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: #767676;
+        }
+
+        .footer .separator {
+            color: #dddddd;
+            margin: 0 10px;
+        }
+
+        .logo {
+            margin-top: 30px;
+        }
+
+        .logo svg {
+            fill: #cccccc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>404</h1>
+    <h2>File not found</h2>
+    
+    <p>The site configured at this address does not contain the requested file.</p>
+    
+    <p>If this is your site, make sure that the filename case matches the URL as well as any file permissions.</p>
+    
+    <p class="note">For root URLs (like <code>http://example.com/</code>) you must provide an <code>index.html</code> file.</p>
+    
+    <p><a href="#">Read the full documentation</a> for more information about using <strong>GitHub Pages</strong>.</p>
+    
+    <div class="footer">
+        <a href="#">GitHub Status</a>
+        <span class="separator">—</span>
+        <a href="#">@githubstatus</a>
+    </div>
+
+    <div class="logo">
+        <!-- Официальная SVG иконка GitHub -->
+        <svg height="32" viewBox="0 0 16 16" version="1.1" width="32" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+        </svg>
+    </div>
+</div>
+
+</body>
+</html>
